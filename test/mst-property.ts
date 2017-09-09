@@ -1,35 +1,30 @@
 import * as jsc from 'jsverify'
 
 import {
-  TypeFlags,
   isType,
+  TypeFlags,
   isPrimitiveType,
   isArrayType,
   isMapType,
   isObjectType,
-  // isFrozenType,
-  isIdentifierType,
   isLateType,
   isLiteralType,
   isOptionalType,
+  isIdentifierType,
+  isUnionType,
+  // isFrozenType,
   // isReferenceType,
   // isRefinementType,
-  isUnionType
-// HACK: enum and functions don't actually exist in the distributed npm module!
-// } from 'mobx-state-tree/dist/types/type-flags'
-} from './mst-src/types/type-flags'
+// HACK: enum and functions don't actually exist in the distributed npm module,
+// so we need to include the source in our repo...
+} from './mst-src/types/type-flags' //'mobx-state-tree/dist/types/type-flags'
 
 // HACK: ...which means that any other types we import have to come
 // from the same source.
-
-// import { IType } from 'mobx-state-tree'
-// import { ArrayType } from 'mobx-state-tree/dist/types/complex-types/array'
-// import { MapType } from 'mobx-state-tree/dist/types/complex-types/map'
-// import { ObjectType } from 'mobx-state-tree/dist/types/complex-types/object'
-import { IType } from './mst-src/types/type'
-import { ArrayType } from './mst-src/types/complex-types/array'
-import { MapType } from './mst-src/types/complex-types/map'
-import { ObjectType } from './mst-src/types/complex-types/object'
+import { IType } from './mst-src/types/type' //'mobx-state-tree/dist/types/type-flags'
+import { ArrayType } from './mst-src/types/complex-types/array' //'mobx-state-tree/dist/types/type-flags'
+import { MapType } from './mst-src/types/complex-types/map' //'mobx-state-tree/dist/types/type-flags'
+import { ObjectType } from './mst-src/types/complex-types/object' //'mobx-state-tree/dist/types/type-flags'
 
 const typeCache = new WeakMap<IType<any, any>, jsc.Arbitrary<any>>()
 
@@ -63,20 +58,23 @@ function getJsc(type : IType<any, any>) : jsc.Arbitrary<any> {
     return getJsc(type.subType)
   }
   if(isOptionalType(type)) {
-    return jsc.either(
+    return jsc.oneof([
       getJsc(type.type),
       (typeof type.defaultValue === 'function')
         ? jsc.constant(type.defaultValue())
         : jsc.constant(type.defaultValue)
-    )
+    ])
   }
   if(isUnionType(type)) { //also handles enum types
-    return jsc.sum(type.types.map(getJsc))
+    return jsc.oneof(type.types.map(getJsc))
   }
   if(isLiteralType(type)) {
     return jsc.constant(type.value)
   }
   if(isIdentifierType(type)) {
+    // TODO: this is incomplete -- it may not allow testing a real tree
+    // containing a reference to a node with an identifier. contingent
+    // on also implementing generation for reference types.
     if((type.identifierType.flags & TypeFlags.String) === TypeFlags.String) {
       return jsc.string
     }
@@ -116,6 +114,18 @@ function getJsc(type : IType<any, any>) : jsc.Arbitrary<any> {
   throw new TypeError('Unrecognized type!')
 }
 
+import { Property } from 'jsverify'
+import { ISnapshottable } from './mst-src'
+export function property<A, AA>(description: String, type1: IType<A, AA>, prop: (t: AA & ISnapshottable<A>) => Property<A>): any;
+export function property<A, AA, B, BB>(description: String, type1: IType<A, AA>,type2: IType<B, BB>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC, D, DD>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>,type4: IType<D, DD>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>, w: DD & ISnapshottable<D>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC, D, DD, E, EE>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>,type4: IType<D, DD>,type5: IType<E, EE>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>, w: DD & ISnapshottable<D>, e: EE & ISnapshottable<E>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC, D, DD, E, EE, F, FF>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>,type4: IType<D, DD>,type5: IType<E, EE>,type6: IType<F, FF>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>, w: DD & ISnapshottable<D>, e: EE & ISnapshottable<E>, a: FF & ISnapshottable<F>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC, D, DD, E, EE, F, FF, G, GG>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>,type4: IType<D, DD>,type5: IType<E, EE>,type6: IType<F, FF>,type7: IType<G, GG>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>, w: DD & ISnapshottable<D>, e: EE & ISnapshottable<E>, a: FF & ISnapshottable<F>, b: GG & ISnapshottable<G>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC, D, DD, E, EE, F, FF, G, GG, H, HH>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>,type4: IType<D, DD>,type5: IType<E, EE>,type6: IType<F, FF>,type7: IType<G, GG>,type8: IType<H, HH>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>, w: DD & ISnapshottable<D>, e: EE & ISnapshottable<E>, a: FF & ISnapshottable<F>, b: GG & ISnapshottable<G>, c: HH & ISnapshottable<H>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC, D, DD, E, EE, F, FF, G, GG, H, HH, I, II>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>,type4: IType<D, DD>,type5: IType<E, EE>,type6: IType<F, FF>,type7: IType<G, GG>,type8: IType<H, HH>,type9: IType<I, II>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>, w: DD & ISnapshottable<D>, e: EE & ISnapshottable<E>, a: FF & ISnapshottable<F>, b: GG & ISnapshottable<G>, c: HH & ISnapshottable<H>, d: II & ISnapshottable<I>) => Property<any>): any;
+export function property<A, AA, B, BB, C, CC, D, DD, E, EE, F, FF, G, GG, H, HH, I, II, J, JJ>(description: String, type1: IType<A, AA>,type2: IType<B, BB>,type3: IType<C, CC>,type4: IType<D, DD>,type5: IType<E, EE>,type6: IType<F, FF>,type7: IType<G, GG>,type8: IType<H, HH>,type9: IType<I, II>,type10: IType<J, JJ>, prop: (t: AA & ISnapshottable<A>, u: BB & ISnapshottable<B>, v: CC & ISnapshottable<C>, w: DD & ISnapshottable<D>, e: EE & ISnapshottable<E>, a: FF & ISnapshottable<F>, b: GG & ISnapshottable<G>, c: HH & ISnapshottable<H>, d: II & ISnapshottable<I>, f: JJ & ISnapshottable<J>) => Property<any>): any;
 export function property(description : string, ...types: any[]): jsc.Result<any> {
   const [prop] = types.splice(-1, 1)
   return jsc.property(
