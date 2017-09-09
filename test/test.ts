@@ -1,7 +1,8 @@
-/* global describe:false */
-const { types, clone, getSnapshot } = require('mobx-state-tree')
-const jsc = require('jsverify')
-const deepEqual = require('deep-equal')
+import { types, clone, getSnapshot } from 'mobx-state-tree'
+import * as jsc from 'jsverify'
+import deepEqual = require('deep-equal')
+
+import { property } from './mst-property'
 
 const Todo = types.model("Todo", {
   title: types.string,
@@ -26,7 +27,7 @@ const jscStore = jsc.record({
 })
 
 
-describe("todos", () => {
+describe("todos using jsc types", () => {
   jsc.property("toggling a todo twice", jscTodo, t => {
     const todo = Todo.create(t)
 
@@ -39,3 +40,16 @@ describe("todos", () => {
 
   //....
 })
+
+describe("todos using mst types", () => {
+  property("toggling a todo twice", Todo, (todo : typeof Todo.Type) => {
+    const cloned = clone(todo)
+    cloned.toggle()
+    cloned.toggle()
+
+    return deepEqual(getSnapshot(cloned), getSnapshot(todo))
+  })
+
+  //....
+})
+
