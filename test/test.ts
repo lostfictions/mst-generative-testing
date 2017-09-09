@@ -1,6 +1,5 @@
-/* global describe:false */
-import { types, destroy, clone, getSnapshot } from './mst-src' //'mobx-state-tree'
-/* global deepEqual:false */ import deepEqual = require('deep-equal') //eslint-disable-line no-undef
+import { types, destroy, clone, getSnapshot } from './mst-src'
+import deepEqual = require('deep-equal')
 
 import { property } from './mst-property'
 
@@ -89,14 +88,16 @@ describe('todos', () => {
     store.completeAll()
     return store.activeCount === 0
   })
-
-
-  //....
 })
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// https://github.com/mobxjs/mobx-state-tree/blob/master/examples/boxes/src/stores/domain-state.js
-//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// from  https://github.com/mobxjs/mobx-state-tree/blob/master/examples/boxes/src/stores/domain-state.js
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import { hasParent, getParent } from 'mobx-state-tree'
 
@@ -126,6 +127,14 @@ const Box = types
     }
   }))
 
+import * as jsc from 'jsverify'
+
 describe('boxes', () => {
+  property('boxes given a positive dx will have a greater final x', Box, jsc.nat, (box, dx) => {
+    const startX = box.x
+    box.move(dx, 0)
+    return box.x >= startX
+  })
+
   property('width is always be greater than 0', Box, box => box.width > 0)
 })
