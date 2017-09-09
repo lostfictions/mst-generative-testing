@@ -136,5 +136,6 @@ describe('boxes', () => {
     return box.x >= startX
   })
 
-  property('width is always be greater than 0', Box, box => box.width > 0)
+  property('box width is always greater than 0', Box, box => box.width > 0)
 })
+
